@@ -1,0 +1,128 @@
+﻿@model RecipeManager.Models.Recipe
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>@Model.Name by @Model.UploaderName</h1>
+<button class="btn btn-outline-success" onclick="window.print()">Print (Print to PDF)</button>
+@if (User.IsInRole("Admin"))
+{
+    <input type="button" class="btn btn-outline-success m-1" value="Add to Featured" onclick="location.href='@Url.Action("AddToFeatured", "Recipes", new { id = Model.Id })'">
+}
+else
+{
+    <input type="button" class="btn btn-outline-success m-1" value="Add to Favourites" onclick="location.href='@Url.Action("AddToFavourites", "Recipes", new { id = Model.Id })'">
+}
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <table class="table table-bordered">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Time)</th>
+                <td>@Model.Time</td>
+            </tr>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Servings)</th>
+                <td>@Model.Servings</td>
+            </tr>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Description)</th>
+                <td>@Model.Description</td>
+            </tr>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.IsPublic)</th>
+                <td>@Model.IsPublic</td>
+            </tr>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.UploadDate)</th>
+                <td>@Model.UploadDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Rating</th>
+                @if (Model.RatingCount == 0)
+                {
+                    <td>Unrated</td>
+                }
+                else
+                {
+                    <td>@Model.RatingAverage/5 for @Model.RatingCount ratings</td>
+                }
+            </tr>
+            <tr>
+                <th>Rate this Recipe?</th>
+                <td>
+                    <form asp-action="Rate">
+                        <input type="hidden" asp-for="@Model.Id" />
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="stars" value="1">
+                            <label class="form-check-label">1</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="stars" value="2">
+                            <label class="form-check-label">2</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="stars" value="3">
+                            <label class="form-check-label">3</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="stars" value="4">
+                            <label class="form-check-label">4</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="stars" value="5" checked>
+                            <label class="form-check-label">5</label>
+                        </div>
+                        <input type="submit" value="Rate!" class="btn btn-primary" />
+                    </form>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+    <div class="col-md-4">
+        <img id="blah" class="mx-auto d-flex border border-dark" src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Photo)" style="width: 300px; height: 300px; object-fit: cover; border-radius: 50%;" />
+    </div>
+</div>
+
+<h3 class="mt-5">The Ingredients</h3>
+<table class="table table-bordered" id="ingredientTable">
+    <tr>
+        <th>Amount</th>
+        <th>Name</th>
+    </tr>
+    @foreach (var item in Model.Ingredients)
+    {
+        <tr>
+            <td>@item.Measurement</td>
+            <td>@item.Name</td>
+        </tr>
+    }
+</table>
+
+<h3 class="mt-5">The Steps</h3>
+<table class="table table-bordered" id="stepTable">
+    <tr>
+        <th>Step #</th>
+        <th>Description</th>
+    </tr>
+    @foreach (var item in Model.Steps.OrderBy(s => s.StepNumber))
+    {
+        <tr>
+            <td>@item.StepNumber</td>
+            <td>@item.Description</td>
+        </tr>
+    }
+</table>
+
+<h3 class="mt-5">The Categories</h3>
+<table class="table table-bordered">
+
+    @foreach (var item in Model.Categories)
+    {
+        <tr>
+            <td>@item.Name</td>
+        </tr>
+    }
+</table>

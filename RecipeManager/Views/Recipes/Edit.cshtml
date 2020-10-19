@@ -1,0 +1,226 @@
+﻿@model RecipeManager.Models.Recipe
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit a Recipe</h1>
+<hr />
+<form asp-action="Edit" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-8">
+            <h3>The Details</h3>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Photo" />
+            <input type="hidden" asp-for="UploadDate" />
+            <input type="hidden" asp-for="UserId" />
+            <div class="form-group">
+                <label class="control-label">Photo</label>
+                <input name="NewPhoto" class="form-control" type="file" onchange="readURL(this);" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input name="Name" class="form-control" value="@Model.Name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Time" class="control-label"></label>
+                <input name="Time" class="form-control" value="@Model.Time" />
+                <span asp-validation-for="Time" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Servings" class="control-label"></label>
+                <input name="Servings" class="form-control" value="@Model.Servings" />
+                <span asp-validation-for="Servings" class="text-danger"> </span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input name="Description" class="form-control" value="@Model.Description">
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" name="IsPublic" class="form-check-input" asp-for="IsPublic" /> Let anyone see this recipe?
+                </label>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <img id="blah" class="mx-auto mt-5 d-flex border border-dark" src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Photo)" style="width: 300px; height: 300px; object-fit: cover; border-radius: 50%;" />
+        </div>
+    </div>
+
+    <h3 class="mt-5">The Ingredients</h3>
+    <button type="button" class="btn btn-success m-1" onclick="addAnotherIngredient()">Add another Ingredient</button>
+    <table class="table table-bordered" id="ingredientTable">
+        <tr>
+            <th>Amount</th>
+            <th>Name</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model.Ingredients)
+        {
+            <tr>
+
+                <td><input class="form-control" name="IngredientAmount" value="@item.Measurement" /></td>
+                <td><input class="form-control" name="IngredientName" value="@item.Name" /></td>
+                <td><button type="button" class="btn btn-danger form-control" onclick="deleteIngredientRow(this)">Delete</button></td>      
+            </tr>
+        }
+        </table>
+
+    <h3 class="mt-5">The Steps</h3>
+    <button type="button" class="btn btn-success m-1" onclick="addAnotherStep()">Add another Step</button>
+    <table class="table table-bordered" id="stepTable">
+        <tr>
+            <th>Step #</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model.Steps.OrderBy(s => s.StepNumber))
+        {
+            <tr>
+                <td><h5 class="text-center">@item.StepNumber</h5></td>
+                <td><input class="form-control" name="StepDescription" value="@item.Description"/></td>
+                <td><button type="button" class="btn btn-danger form-control" onclick="deleteStepRow(this)">Delete</button></td>
+            </tr>
+        }
+        </table>
+
+    <h3 class="mt-5">The Categories</h3>
+    <table class="table table-bordered">
+        <tr>
+            <th colspan="3">Check all that apply</th>
+        </tr>
+        @*@{ 
+            List<String> categories = new List<string>(){"Breakfast", "Lunch", "Dinner",
+                                                         "Brunch", "Snack", "Beverage",
+                                                         "Low Sugar", "Keto", "Paleo",
+                                                         "Vegan", "Vegetarian", "Dariy Free",
+                                                         "Gluton Free", "", ""};
+
+            for (int x = 0; x < categories.Count; x += 3)
+            {
+                <tr>
+                    @if (Model.Categories.Any(c => c.Name == categories[x].ToLower())) {
+                        <td><input type="checkbox" name="Categories" value="@categories[x].ToLower()" checked />@categories[x]</td>
+                    } else {
+                        <td><input type="checkbox" name="Categories" value="@categories[x].ToLower()" /> @categories[x]</td>
+                    }
+                    @if (Model.Categories.Any(c => c.Name == categories[x + 1].ToLower())) {
+                        <td><input type="checkbox" name="Categories" value="@categories[x + 1].ToLower()" checked /> @categories[x + 1]</td>
+                    } else {
+                        <td><input type="checkbox" name="Categories" value="@categories[x + 1].ToLower()" />  @categories[x + 1]</td>
+                    }
+                    @if (Model.Categories.Any(c => c.Name == categories[x + 2].ToLower())) {
+                        <td><input type="checkbox" name="Categories" value="@categories[x + 2].ToLower()" checked /> @categories[x + 2]</td>
+                    } else {
+                        <td><input type="checkbox" name="Categories" value="@categories[x + 2].ToLower()" /> @categories[x + 2]</td>
+                    }
+                </tr>
+            }
+        }*@
+        <tr>
+            <td><input type="checkbox" name="Categories" value="breakfast" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("breakfast"))) == true ? "checked = 'checked'" : string.Empty)/> Breakfast</td>
+            <td><input type="checkbox" name="Categories" value="lunch" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("lunch"))) == true ? "checked = 'checked'" : string.Empty)/> Lunch</td>
+            <td><input type="checkbox" name="Categories" value="dinner" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("dinner"))) == true ? "checked = 'checked'" : string.Empty)/> Dinner</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="Categories" value="brunch" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("brunch"))) == true ? "checked = 'checked'" : string.Empty)/> Brunch</td>
+            <td><input type="checkbox" name="Categories" value="snack" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("snack"))) == true ? "checked = 'checked'" : string.Empty)/> Snack</td>
+            <td><input type="checkbox" name="Categories" value="beverage" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("beverage"))) == true ? "checked = 'checked'" : string.Empty)/> Beverage</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="Categories" value="low sugar" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("low sugar"))) == true ? "checked = 'checked'" : string.Empty)/> Low Sugar</td>
+            <td><input type="checkbox" name="Categories" value="keto" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("keto"))) == true ? "checked = 'checked'" : string.Empty)/> Keto</td>
+            <td><input type="checkbox" name="Categories" value="paleo" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("paleo"))) == true ? "checked = 'checked'" : string.Empty)/> Paleo</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="Categories" value="vegan"  @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("vegan"))) == true ? "checked = 'checked'" : string.Empty)/> Vegan</td>
+            <td><input type="checkbox" name="Categories" value="vegetarian" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("vegetarian"))) == true ? "checked = 'checked'" : string.Empty)/> Vegetarian</td>
+            <td><input type="checkbox" name="Categories" value="dairy free" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("dairy free"))) == true ? "checked = 'checked'" : string.Empty)/> Dairy Free</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="Categories" value="gluton free" @(Convert.ToBoolean(Model.Categories.Any(x => x.Name.Equals("gluton free"))) == true ? "checked = 'checked'" : string.Empty)/> Gluton Free</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    <div class="form-group">
+        <input type="button" value="Cancel" class="btn btn-warning" onclick="location.href='@Url.Action("Index", "Recipes")'" />
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah')
+                    .attr('src', e.target.result)
+                    .width(300)
+                    .height(300);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function addAnotherIngredient() {
+        let table = document.getElementById("ingredientTable");
+
+        let row = table.insertRow(-1);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+
+        cell1.innerHTML = "<input class='form-control' name='ingredientAmount'/>";
+        cell2.innerHTML = "<input class='form-control' name='ingredientName' />";
+        cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteIngredientRow(this)'>Delete</button>";
+    }
+
+    function addAnotherStep() {
+        let table = document.getElementById("stepTable");
+
+        stepNumber = parseInt(table.rows.length - 1) + 1;
+
+        let row = table.insertRow(-1);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+
+        cell1.innerHTML = "<h5 class='text-center'>" + stepNumber + "</h5>";
+        cell2.innerHTML = "<input class='form-control' name='stepDescription' />";
+        cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteStepRow(this)'>Delete</button>";
+    }
+
+    function deleteIngredientRow(input) {
+        let table = document.getElementById("ingredientTable");
+        $(input).parents('tr').remove();
+
+        if (table.rows.length == 1) {
+            addAnotherIngredient();
+        }
+    }
+
+    function deleteStepRow(input) {
+        let table = document.getElementById("stepTable");
+        console.log("HELLO ALIENS!");
+        $(input).parents('tr').remove()
+
+        for (let x = 1; x < table.rows.length; x++) {
+            table.rows[x].cells[0].innerHTML = "<h5 class='text-center'>" + x + "</h5>";
+            console.log(x);
+        }
+
+        if (table.rows.length == 1) {
+            addAnotherStep();
+        }
+    }
+</script>

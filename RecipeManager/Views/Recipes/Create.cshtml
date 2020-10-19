@@ -1,0 +1,191 @@
+﻿@model RecipeManager.Models.Recipe
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Upload a Recipe</h1>
+
+<hr />
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-8">
+            <h3>The Details</h3>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Photo" class="control-label"></label>
+                <input name="Photo" class="form-control" type="file" onchange="readURL(this);" />
+                <span asp-validation-for="Photo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input name="Name" class="form-control" value="Fruitloops" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Time" class="control-label"></label>
+                <input name="Time" class="form-control" value="3 hours" />
+                <span asp-validation-for="Time" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Servings" class="control-label"></label>
+                <input name="Servings" class="form-control" value="2 Humans" />
+                <span asp-validation-for="Servings" class="text-danger"> </span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input name="Description" class="form-control" value="A colourful treat to soothe a wairy traveller">
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" name="IsPublic" class="form-check-input" asp-for="IsPublic" checked/> Let anyone see this recipe?
+                </label>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <img id="blah" class="mx-auto mt-5 d-flex border border-dark" src="" style="width: 300px; height: 300px; object-fit: cover; border-radius: 50%;" />
+        </div>
+        </div>
+    
+        <h3 class="mt-5">The Ingredients</h3>
+        <button type="button" class="btn btn-success m-1" onclick="addAnotherIngredient()">Add another Ingredient</button>
+        <table class="table table-bordered" id="ingredientTable">
+            <tr>
+                <th>Amount</th>
+                <th>Name</th>
+                <th></th>
+            </tr>
+            <tr>
+                <td><input class="form-control" name="IngredientAmount" /></td>
+                <td><input class="form-control" name="IngredientName" /></td>
+                <td><button type="button" class="btn btn-danger form-control" onclick="deleteIngredientRow(this)">Delete</button></td>
+            </tr>
+        </table>
+
+        <h3 class="mt-5">The Steps</h3>
+        <button type="button" class="btn btn-success m-1" onclick="addAnotherStep()">Add another Step</button>
+        <table class="table table-bordered" id="stepTable">
+            <tr>
+                <th>Step #</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+            <tr>
+                <td><h5 class="text-center">1</h5></td>
+                <td><input class="form-control" name="StepDescription" /></td>
+                <td><button type="button" class="btn btn-danger form-control" onclick="deleteStepRow(this)">Delete</button></td>
+            </tr>
+        </table>
+
+        <h3 class="mt-5">The Categories</h3>
+        <table class="table table-bordered">
+            <tr>
+                <th colspan="3">Check all that apply</th>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Categories" value="breakfast" /> Breakfast</td>
+                <td><input type="checkbox" name="Categories" value="lunch" /> Lunch</td>
+                <td><input type="checkbox" name="Categories" value="dinner" /> Dinner</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Categories" value="brunch" /> Brunch</td>
+                <td><input type="checkbox" name="Categories" value="snack" /> Snack</td>
+                <td><input type="checkbox" name="Categories" value="beverage" /> Beverage</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Categories" value="low sugar" /> Low Sugar</td>
+                <td><input type="checkbox" name="Categories" value="keto" /> Keto</td>
+                <td><input type="checkbox" name="Categories" value="paleo" /> Paleo</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Categories" value="vegan" /> Vegan</td>
+                <td><input type="checkbox" name="Categories" value="vegetarian" /> Vegetarian</td>
+                <td><input type="checkbox" name="Categories" value="dairy free" /> Dairy Free</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Categories" value="gluton free" /> Gluton Free</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+
+        <div class="form-group">
+            <input type="button" value="Cancel" class="btn btn-warning" onclick="location.href='@Url.Action("Index", "Recipes")'" />
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+</form>
+
+        @section Scripts {
+            @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+        }
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah')
+                    .attr('src', e.target.result)
+                    .width(300)
+                    .height(300);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function addAnotherIngredient() {
+        let table = document.getElementById("ingredientTable");
+
+        let row = table.insertRow(-1);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+
+        cell1.innerHTML = "<input class='form-control' name='ingredientAmount'/>";
+        cell2.innerHTML = "<input class='form-control' name='ingredientName' />";
+        cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteIngredientRow(this)'>Delete</button>";
+    }
+
+    function addAnotherStep() {
+        let table = document.getElementById("stepTable");
+
+        stepNumber = parseInt(table.rows.length -1) + 1;
+
+        let row = table.insertRow(-1);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+
+        cell1.innerHTML = "<h5 class='text-center'>" + stepNumber + "</h5>";
+        cell2.innerHTML = "<input class='form-control' name='stepDescription' />";
+        cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteStepRow(this)'>Delete</button>";
+    }
+
+    function deleteIngredientRow(input) {
+        let table = document.getElementById("ingredientTable");
+        $(input).parents('tr').remove();
+
+        if (table.rows.length == 1) {
+            addAnotherIngredient();
+        }
+    }
+
+    function deleteStepRow(input) {
+        let table = document.getElementById("stepTable");
+        console.log("HELLO ALIENS!");
+        $(input).parents('tr').remove()
+
+        for (let x = 1; x < table.rows.length; x++) {
+            table.rows[x].cells[0].innerHTML = "<h5 class='text-center'>" + x + "</h5>";
+            console.log(x);
+        }
+
+        if (table.rows.length == 1) {
+            addAnotherStep();
+        }
+    }
+</script>

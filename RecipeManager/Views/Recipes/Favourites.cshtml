@@ -1,0 +1,63 @@
+﻿@model IEnumerable<RecipeManager.Models.Recipe>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>My Favourites</h1>
+
+<table class="table table-bordered">
+    <thead class="text-center">
+        <tr>
+            <th>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Time)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Servings)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsPublic)
+            </th>
+            <th>Rating</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <img class="card-img-top m-auto d-block" src="data:image/jpeg;base64,@Convert.ToBase64String(item.Photo)" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="location.href='@Url.Action("Details", "Recipes", new { id=item.Id})'" />
+                <h5 class="card-title text-center">@Html.DisplayFor(modelItem => item.Name)</h5>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Time)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Servings)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @item.IsPublic.ToString()
+            </td>
+                @if (item.RatingCount == 0)
+                {
+                    <td>Unrated</td>
+                }
+                else
+                {
+                    <td>@item.RatingAverage/5 for @item.RatingCount ratings</td>
+                }
+                <td>
+                    <input type="button" class="btn btn-outline-danger m-1" value="Remove From Favourites" onclick="location.href='@Url.Action("RemoveFromFavourites", "Recipes", new { id=item.Id})'">
+                </td>
+            </tr>
+}
+    </tbody>
+</table>

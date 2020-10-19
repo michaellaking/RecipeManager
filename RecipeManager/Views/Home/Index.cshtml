@@ -1,0 +1,33 @@
+﻿@model IEnumerable<RecipeManager.Models.Recipe>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row justify-content-center">
+    <div class="col-auto">
+        <h1 class="text-center display-4">Featured Recipes</h1>
+        <table class="m-auto">
+            <tr>
+                @foreach (var item in Model.Take(3))
+                {
+                    <td>
+                        <img class="card-img-top m-auto d-block" src="data:image/jpeg;base64,@Convert.ToBase64String(item.Photo)" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="location.href='@Url.Action("Details", "Recipes", new { id=item.Id})'" />
+                        <h5 class="card-title text-center">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    </td>
+                }
+            </tr>
+            @if (Model.Count() == 6)
+            {
+            <tr>
+                @foreach (var item in Model.TakeLast(3))
+                {
+                    <td>
+                        <img class="card-img-top m-auto d-block" src="data:image/jpeg;base64,@Convert.ToBase64String(item.Photo)" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="location.href='@Url.Action("Details", "Recipes", new { id = item.Id })'" />
+                        <h5 class="card-title text-center">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    </td>
+                }
+            </tr>
+            }
+        </table>
+    </div>
+</div>

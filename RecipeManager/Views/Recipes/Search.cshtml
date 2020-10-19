@@ -1,0 +1,215 @@
+﻿@model PaginatedList<RecipeManager.Models.Recipe>
+
+@{
+    ViewData["Title"] = "SearchByName";
+}
+
+@if (ViewBag.SearchPhrase != null && ViewBag.SearchCategory == null)
+{
+    <h1>@ViewBag.ResultCount Results for @ViewBag.SearchPhrase</h1>
+}
+else if(ViewBag.SearchCategory != null && ViewBag.SearchPhrase == null) 
+{ 
+<h1>@ViewBag.ResultCount Results for @ViewBag.SearchCategory</h1>
+}
+else
+{
+<h1>@ViewBag.ResultCount Results for @ViewBag.SearchPhrase + @ViewBag.SearchCategory</h1>
+}
+
+
+<div class="row">
+    <div class="col-md-3 col-lg-2 border">
+        <h3>Filters</h3>
+        <form  asp-controller="Recipes" asp-action="SearchByNameAndCategory">
+            <input type="hidden" name="SearchPhrase" value="@ViewBag.SearchPhrase" />
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="breakfast" checked>
+                <label class="form-check-label">
+                    Breakfast
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="lunch">
+                <label class="form-check-label">
+                    Lunch
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="dinner">
+                <label class="form-check-label">
+                    Dinner
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="brunch">
+                <label class="form-check-label">
+                    Brunch
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="snack">
+                <label class="form-check-label">
+                    Snack
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="beverage">
+                <label class="form-check-label">
+                    Beverages
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="low sugar">
+                <label class="form-check-label">
+                    Low Sugar
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="keto">
+                <label class="form-check-label">
+                    Keto
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="paleo">
+                <label class="form-check-label">
+                    Paleo
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="vegan">
+                <label class="form-check-label">
+                    Vegan
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="vegetarian">
+                <label class="form-check-label">
+                    Vegetarian
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="dairy free">
+                <label class="form-check-label">
+                    Dairy Free
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="category" value="gluton free">
+                <label class="form-check-label">
+                    Gluton Free
+                </label>
+            </div>
+            <input type="submit" value="Apply Filters" class="btn btn-primary mt-1 mb-2" />
+        </form>
+    </div>
+    <div class="col-md-9 col-lg-10">
+        <table class="table table-bordered">
+            <thead class="text-center">
+                <tr>
+                    <th>
+                    </th>
+                    <th>
+                        Time
+                    </th>
+                    <th>
+                        Servings
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                    <th>
+                        Rating
+                    </th>
+                    <th>
+                        IsPublic?
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td>
+                        <img class="card-img-top m-auto d-block" src="data:image/jpeg;base64,@Convert.ToBase64String(item.Photo)" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="location.href='@Url.Action("Details", "Recipes", new { id=item.Id})'" />
+                        <h5 class="card-title text-center">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Time)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Servings)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    @if (item.RatingCount == 0)
+                    {
+                        <td>Unrated</td>
+                    }
+                    else {
+                        <td>@item.RatingAverage/5 for @item.RatingCount ratings</td>
+                    }
+                    <td>
+                         @item.IsPublic.ToString()
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+        @{
+            var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+            var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+        }
+
+        @if (ViewBag.Action == "SearchByName")
+        {
+            <a asp-action="@ViewBag.Action"
+               asp-route-SearchPhrase="@ViewBag.SearchPhrase"
+               asp-route-pageNumber="@(Model.PageIndex - 1)"
+               class="btn btn-outline-secondary @prevDisabled">
+                Previous
+            </a>
+            <a asp-action="@ViewBag.Action"
+               asp-route-SearchPhrase="@ViewBag.SearchPhrase"
+               asp-route-pageNumber="@(Model.PageIndex + 1)"
+               class="btn btn-outline-secondary @nextDisabled">
+                Next
+            </a>
+        }
+        else if (ViewBag.Action == "SearchByCategory")
+        {
+            <a asp-action="@ViewBag.Action"
+               asp-route-Category="@ViewBag.SearchCategory"
+               asp-route-pageNumber="@(Model.PageIndex - 1)"
+               class="btn btn-outline-secondary @prevDisabled">
+                Previous
+            </a>
+            <a asp-action="@ViewBag.Action"
+               asp-route-Category="@ViewBag.SearchCategory"
+               asp-route-pageNumber="@(Model.PageIndex + 1)"
+               class="btn btn-outline-secondary @nextDisabled">
+                Next
+            </a>
+        }
+        else if(ViewBag.Action == "SearchByNameAndCategory")
+        {
+            <a asp-action="@ViewBag.Action"
+               asp-route-SearchPhrase="@ViewBag.SearchPhrase"
+               asp-route-Category="@ViewBag.SearchCategory"
+               asp-route-pageNumber="@(Model.PageIndex - 1)"
+               class="btn btn-outline-secondary @prevDisabled">
+                Previous
+            </a>
+            <a asp-action="@ViewBag.Action"
+               asp-route-SearchPhrase="@ViewBag.SearchPhrase"
+               asp-route-Category="@ViewBag.SearchCategory"
+               asp-route-pageNumber="@(Model.PageIndex + 1)"
+               class="btn btn-outline-secondary @nextDisabled">
+                Next
+            </a>
+        }
+    </div>
+</div>
