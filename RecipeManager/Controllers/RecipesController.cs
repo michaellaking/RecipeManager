@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ namespace RecipeManager.Controllers
             _userManager = userManager;
         }
 
+        [Authorize]
         // GET: Recipes
         public async Task<IActionResult> Index()
         {
@@ -35,6 +37,7 @@ namespace RecipeManager.Controllers
             return View(await _context.Recipes.Where(r => r.UserId == userId).ToListAsync());
         }
 
+        [Authorize]
         public async Task<IActionResult> Favourites()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -65,6 +68,7 @@ namespace RecipeManager.Controllers
             return View(recipes);
         }
 
+        [Authorize]
         public async Task<IActionResult> AddToFavourites(long id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,6 +86,7 @@ namespace RecipeManager.Controllers
             return RedirectToAction("Favourites", "Recipes");
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveFromFavourites(long id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -97,6 +102,7 @@ namespace RecipeManager.Controllers
             return RedirectToAction("Favourites", "Recipes");
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Featured()
         {
             var recipes = await _context.Recipes.Where(r => r.IsFeatured == true).ToListAsync();
@@ -104,6 +110,7 @@ namespace RecipeManager.Controllers
             return View(recipes);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddToFeatured(long id)
         {
             var recipe = await _context.Recipes.FirstOrDefaultAsync(f => f.Id == id);
@@ -118,6 +125,7 @@ namespace RecipeManager.Controllers
             return RedirectToAction("Featured", "Recipes");
         }
 
+        [Authorize]
         public async Task<IActionResult> RemoveFromFeatured(long id)
         {
             var recipe = await _context.Recipes.FirstOrDefaultAsync(f => f.Id == id);
@@ -155,17 +163,20 @@ namespace RecipeManager.Controllers
             return View(recipe);
         }
 
+        [Authorize]
         // GET: Recipes/Create
         public IActionResult Create()
         {
             return View();
         }
 
+
         // POST: Recipes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create(Recipe recipe, IFormFile Photo, String Name, String Time, String Servings, String Description, bool IsPublic, String[] IngredientAmount, String[] IngredientName, String[] StepDescription, String[] Categories)
         {
 
@@ -220,6 +231,7 @@ namespace RecipeManager.Controllers
         }
 
         // GET: Recipes/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(long? id)
         {
             if (id == null)
@@ -228,16 +240,26 @@ namespace RecipeManager.Controllers
             }
 
             var recipe = await _context.Recipes.FindAsync(id);
-            recipe.Ingredients = await _context.Ingredients.Where(i => i.RecipeId == recipe.Id).ToListAsync();
-            recipe.Steps = await _context.Steps.Where(s => s.RecipeId == recipe.Id).ToListAsync();
-            recipe.Categories = await _context.Categories.Where(c => c.RecipeId == recipe.Id).ToListAsync();
 
-            if (recipe == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if(recipe.UserId == userId) 
             {
-                return NotFound();
-            }
+                recipe.Ingredients = await _context.Ingredients.Where(i => i.RecipeId == recipe.Id).ToListAsync();
+                recipe.Steps = await _context.Steps.Where(s => s.RecipeId == recipe.Id).ToListAsync();
+                recipe.Categories = await _context.Categories.Where(c => c.RecipeId == recipe.Id).ToListAsync();
 
-            return View(recipe);
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                return View(recipe);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // POST: Recipes/Edit/5
@@ -245,80 +267,91 @@ namespace RecipeManager.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(long id, Recipe recipe, IFormFile NewPhoto, String[] IngredientAmount, String[] IngredientName, String[] StepDescription, String[] Categories)
         {
-            var oldIngredients = await _context.Ingredients.Where(i => i.RecipeId == recipe.Id).ToListAsync();
-            var oldSteps = await _context.Steps.Where(s => s.RecipeId == recipe.Id).ToListAsync();
-            var oldCategories = await _context.Categories.Where(c => c.RecipeId == recipe.Id).ToListAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (id != recipe.Id)
+            if (recipe.UserId == userId)
+            {              
+
+                var oldIngredients = await _context.Ingredients.Where(i => i.RecipeId == recipe.Id).ToListAsync();
+                var oldSteps = await _context.Steps.Where(s => s.RecipeId == recipe.Id).ToListAsync();
+                var oldCategories = await _context.Categories.Where(c => c.RecipeId == recipe.Id).ToListAsync();
+
+                if (id != recipe.Id)
+                {
+                    return NotFound();
+                }
+
+                if (ModelState.IsValid)
+                {
+                    List<Ingredient> ingredients = new List<Ingredient>();
+                    List<Step> steps = new List<Step>();
+                    List<Category> categories = new List<Category>();
+
+                    for (int x = 0; x < IngredientAmount.Length; x++)
+                    {
+                        ingredients.Add(new Ingredient(IngredientAmount[x], IngredientName[x]));
+                    }
+
+                    for (int x = 0; x < StepDescription.Length; x++)
+                    {
+                        steps.Add(new Step(x + 1, StepDescription[x]));
+                    }
+
+                    for (int x = 0; x < Categories.Length; x++)
+                    {
+                        categories.Add(new Category() { Name = Categories[x] });
+                    }
+
+                    if(NewPhoto != null)
+                    {
+                        byte[] p1 = null;
+                        using (var fs1 = NewPhoto.OpenReadStream())
+                        using (var ms1 = new MemoryStream())
+                        {
+                            fs1.CopyTo(ms1);
+                            p1 = ms1.ToArray();
+                        }
+
+                        recipe.Photo = p1;
+                    }
+
+                    recipe.Ingredients = ingredients;
+                    recipe.Steps = steps;
+                    recipe.Categories = categories;
+
+                    try
+                    {
+                        _context.RemoveRange(oldIngredients);
+                        _context.RemoveRange(oldSteps);
+                        _context.RemoveRange(oldCategories);
+                        _context.Update(recipe);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!RecipeExists(recipe.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+                return View(recipe);
+            }else
             {
-                return NotFound();
+                return RedirectToAction("Index", "Home");
             }
-
-            if (ModelState.IsValid)
-            {
-                List<Ingredient> ingredients = new List<Ingredient>();
-                List<Step> steps = new List<Step>();
-                List<Category> categories = new List<Category>();
-
-                for (int x = 0; x < IngredientAmount.Length; x++)
-                {
-                    ingredients.Add(new Ingredient(IngredientAmount[x], IngredientName[x]));
-                }
-
-                for (int x = 0; x < StepDescription.Length; x++)
-                {
-                    steps.Add(new Step(x + 1, StepDescription[x]));
-                }
-
-                for (int x = 0; x < Categories.Length; x++)
-                {
-                    categories.Add(new Category() { Name = Categories[x] });
-                }
-
-                if(NewPhoto != null)
-                {
-                    byte[] p1 = null;
-                    using (var fs1 = NewPhoto.OpenReadStream())
-                    using (var ms1 = new MemoryStream())
-                    {
-                        fs1.CopyTo(ms1);
-                        p1 = ms1.ToArray();
-                    }
-
-                    recipe.Photo = p1;
-                }
-
-                recipe.Ingredients = ingredients;
-                recipe.Steps = steps;
-                recipe.Categories = categories;
-
-                try
-                {
-                    _context.RemoveRange(oldIngredients);
-                    _context.RemoveRange(oldSteps);
-                    _context.RemoveRange(oldCategories);
-                    _context.Update(recipe);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RecipeExists(recipe.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(recipe);
         }
 
         // GET: Recipes/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(long? id)
         {
             if (id == null)
@@ -328,23 +361,44 @@ namespace RecipeManager.Controllers
 
             var recipe = await _context.Recipes
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (recipe == null)
-            {
-                return NotFound();
-            }
 
-            return View(recipe);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (recipe.UserId == userId)
+            {
+
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                return View(recipe);
+
+            }else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // POST: Recipes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
-            _context.Recipes.Remove(recipe);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (recipe.UserId == userId)
+            {
+                _context.Recipes.Remove(recipe);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // GET: Recipes/Search/pizza
@@ -504,29 +558,40 @@ namespace RecipeManager.Controllers
             return RedirectToAction(nameof(Details), new { Id = Id });
         }
 
+        [Authorize]
         public async Task<IActionResult> ReverseIsPublic(long Id)
         {
             var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == Id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (recipe == null)
+            if (recipe.UserId == userId)
             {
-                return NotFound();
+
+                if (recipe == null)
+                {
+                    return NotFound();
+                }
+
+                if (recipe.IsPublic)
+                    recipe.IsPublic = false;
+                else
+                    recipe.IsPublic = true;
+
+                _context.Recipes.Update(recipe);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+
+            }else
+            {
+                return RedirectToAction("Index", "Home");
             }
-
-            if (recipe.IsPublic)
-                recipe.IsPublic = false;
-            else
-                recipe.IsPublic = true;
-
-            _context.Recipes.Update(recipe);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
         }
 
             private bool RecipeExists(long id)
         {
             return _context.Recipes.Any(e => e.Id == id);
         }
+
     }
 }
