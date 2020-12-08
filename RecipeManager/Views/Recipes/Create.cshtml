@@ -19,22 +19,22 @@
             </div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
-                <input name="Name" class="form-control" value="Fruitloops" />
+                <input name="Name" class="form-control" value="Fruitloops" maxlength="100"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Time" class="control-label"></label>
-                <input name="Time" class="form-control" value="3 hours" />
+                <input name="Time" class="form-control" value="3 hours" maxlength="100"/>
                 <span asp-validation-for="Time" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Servings" class="control-label"></label>
-                <input name="Servings" class="form-control" value="2 Humans" />
+                <input name="Servings" class="form-control" value="2 Humans" maxlength="100"/>
                 <span asp-validation-for="Servings" class="text-danger"> </span>
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <input name="Description" class="form-control" value="A colourful treat to soothe a wairy traveller">
+                <input name="Description" class="form-control" value="A colourful treat to soothe a wairy traveller" maxlength="100">
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
@@ -58,8 +58,8 @@
                 <th></th>
             </tr>
             <tr>
-                <td><input class="form-control" name="IngredientAmount" /></td>
-                <td><input class="form-control" name="IngredientName" /></td>
+                <td><input class="form-control" name="IngredientAmount" maxlength="100"/></td>
+                <td><input class="form-control" name="IngredientName" maxlength="100"/></td>
                 <td><button type="button" class="btn btn-danger form-control" onclick="deleteIngredientRow(this)">Delete</button></td>
             </tr>
         </table>
@@ -74,7 +74,7 @@
             </tr>
             <tr>
                 <td><h5 class="text-center">1</h5></td>
-                <td><input class="form-control" name="StepDescription" /></td>
+                <td><input class="form-control" name="StepDescription" maxlength="100"/></td>
                 <td><button type="button" class="btn btn-danger form-control" onclick="deleteStepRow(this)">Delete</button></td>
             </tr>
         </table>
@@ -145,8 +145,8 @@
         let cell2 = row.insertCell(1);
         let cell3 = row.insertCell(2);
 
-        cell1.innerHTML = "<input class='form-control' name='ingredientAmount'/>";
-        cell2.innerHTML = "<input class='form-control' name='ingredientName' />";
+        cell1.innerHTML = "<input class='form-control' name='ingredientAmount' maxlength='100'/>";
+        cell2.innerHTML = "<input class='form-control' name='ingredientName' maxlength='100'/>";
         cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteIngredientRow(this)'>Delete</button>";
     }
 
@@ -161,7 +161,7 @@
         let cell3 = row.insertCell(2);
 
         cell1.innerHTML = "<h5 class='text-center'>" + stepNumber + "</h5>";
-        cell2.innerHTML = "<input class='form-control' name='stepDescription' />";
+        cell2.innerHTML = "<input class='form-control' name='stepDescription' maxlength='100'/>";
         cell3.innerHTML = "<button type='button' class='btn btn-danger form-control' onclick='deleteStepRow(this)'>Delete</button>";
     }
 
