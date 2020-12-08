@@ -12,37 +12,7 @@ namespace RecipeManager.Data
 {
     public static class DbInitializer
     {
-        //public static async Task<int> SeedCategories(IServiceProvider serviceProvider)
-        //{
-        //    var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-        //    if (!context.Categories.Any())
-        //    {
-        //        var categories = new List<Category>();
-
-        //        categories.Add(new Category("breakfast", "meal"));
-        //        categories.Add(new Category("lunch", "meal"));
-        //        categories.Add(new Category("dinner", "meal"));
-
-        //        categories.Add(new Category("brunch", "meal"));
-        //        categories.Add(new Category("snack", "meal"));
-        //        categories.Add(new Category("beverage", "drink"));
-
-        //        categories.Add(new Category("low sugar", "diet"));
-        //        categories.Add(new Category("keto", "diet"));
-        //        categories.Add(new Category("paleo", "diet"));
-
-        //        categories.Add(new Category("vegan", "diet"));
-        //        categories.Add(new Category("vegitarian", "diet"));
-        //        categories.Add(new Category("dairy free", "diet"));
-
-        //        context.AddRange(categories);
-        //        await context.SaveChangesAsync();
-
-        //        return 1;
-        //    }
-        //    return 0;
-        //}
+        public static AppSecrets appSecrets { get; set; }
 
         public static async Task<int> SeedUsersAndRoles(IServiceProvider serviceProvider)
         {
@@ -94,13 +64,13 @@ namespace RecipeManager.Data
             // Create Manager User
             var adminUser = new ApplicationUser
             {
-                UserName = "admin@recipe.ca",
-                Email = "admin@recipe.ca",
+                UserName = appSecrets.AdminEmail,
+                Email = appSecrets.AdminEmail,
                 FirstName = "Curtis",
                 LastName = "Admin",
                 EmailConfirmed = true
             };
-            var result = await userManager.CreateAsync(adminUser, "Password!1");
+            var result = await userManager.CreateAsync(adminUser, appSecrets.AdminPassword);
             if (!result.Succeeded)
                 return 1;  // should log an error message here
 
@@ -112,13 +82,13 @@ namespace RecipeManager.Data
             // Create Player User
             var memberUser = new ApplicationUser
             {
-                UserName = "user@recipe.ca",
-                Email = "user@recipe.ca",
+                UserName = appSecrets.UserEmail,
+                Email = appSecrets.UserEmail,
                 FirstName = "Curtis",
                 LastName = "User",
                 EmailConfirmed = true
             };
-            result = await userManager.CreateAsync(memberUser, "Password!1");
+            result = await userManager.CreateAsync(memberUser, appSecrets.UserPassword);
             if (!result.Succeeded)
                 return 3;  // should log an error message here
 

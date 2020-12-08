@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RecipeManager.Data;
+using RecipeManager.Models;
 
 namespace RecipeManager
 {
@@ -17,13 +18,20 @@ namespace RecipeManager
         {
             var host = CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope()) {
-                DbInitializer.SeedUsersAndRoles(scope.ServiceProvider).Wait();
-                //DbInitializer.SeedCategories(scope.ServiceProvider).Wait();
+            var configuration = host.Services.GetService<IConfiguration>();
+            var hosting = host.Services.GetService<IWebHostEnvironment>();
+
+            if (hosting.IsDevelopment())
+            {
+                var secrets = configuration.GetSection("Secrets").Get<AppSecrets>();
+                DbInitializer.appSecrets = secrets;
             }
 
-            
+            using (var scope = host.Services.CreateScope()) {
+                DbInitializer.SeedUsersAndRoles(scope.ServiceProvider).Wait();
+            }
 
+       
             host.Run();
         }
 
